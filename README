@@ -1,0 +1,29 @@
+# spamalize-to-nifti
+
+A little program to convert .VOI volume-of-interest files created by [spamalize](http://brainimaging.waisman.wisc.edu/~oakes/spam/spam_frames.htm) into NIFTI images.
+
+Images will have an identity affine.
+
+Requires [nibabel](http://nipy.sourceforge.net/nibabel/).
+
+## Installation
+
+```pip install spamalize_to_nifti```
+
+## Usage
+
+```voi2nii VOI_FILE NIFTI_FILE```
+
+Note: We'll need to handle multiple VOIs per file somehow. We could:
+
+* Sequentially number multiple VOIs (problem for overlaps!)
+* Bitmask multiple VOIs (so VOIs would be numbererd 1,2,4,8,16...) (problem if more than 16 VOIs, we're limited to 16-bit images)
+* Make multiple output files
+
+Multiple output files seems like the sanest thing, because how else will you know what's in the file? (I guess maybe something that would look at the .voi and tell you?)
+
+The challenge there is that instead of a `NIFTI_FILE` we just get a prefix but maybe that isn't so bad. Could use `SPAM_FILE` for a prefix if no prefix is specified.
+
+```voi_info VOI_FILE```
+
+Prints the header information from a VOI file.
