@@ -26,4 +26,5 @@ The challenge there is that instead of a `NIFTI_FILE` we just get a prefix but m
 
 ```voi_info VOI_FILE```
 
-Prints the header information from a VOI file.
+Prints the header information from a VOI file. Maybe in a machine-readable format?
+
