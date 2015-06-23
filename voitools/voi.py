@@ -19,6 +19,7 @@ import numpy as np
 
 import logging
 logger = logging.getLogger("voi")
+# Leave it on DEBUG while we're developing
 logger.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
@@ -27,6 +28,22 @@ logger.addHandler(ch)
 
 
 Triple = namedtuple('Triple', ['x', 'y', 'z'])
+
+
+def read_file(filename_or_io):
+    if hasattr(filename_or_io, 'readline'):
+        return _read_io(filename_or_io)
+    else:
+        with open(filename_or_io, 'r') as f:
+            return _read_io(f)
+
+
+def _read_io(io):
+    grp = VOIGroup.from_io(io)
+    for i in range(grp.voi_count):
+        voi = VOI.from_io(grp, io)
+        grp.vois.append(voi)
+    return grp
 
 
 class VOIGroup(object):
@@ -69,6 +86,10 @@ class VOIGroup(object):
             "LITTLE_ENDIAN": "<i4"
         }[self.header["Byte Order"]]
 
+    @property
+    def voi_count(self):
+        return int(self.header['Number of VOIs'])
+
 
 class VOI(object):
     def __init__(self, voigroup, header, voxel_indexes):
@@ -89,13 +110,14 @@ class VOI(object):
         Transforms text triples into voxel indexes.
         When done, we will be seek()ed to the start of the next VOI, or eof.
         """
-        header = kls.read_header(io)
+        header = kls._read_header(io)
         voi = kls(voigroup, header, None)
-        voi.read_data(io)
+        voi._read_data(io)
+        voi._seek_to_next_voi(io)
         return voi
 
     @classmethod
-    def read_header(kls, io):
+    def _read_header(kls, io):
         header = {}
         header_start_line = io.readline().strip()
         if not header_start_line == kls.BEGIN_HEADER:
@@ -133,11 +155,19 @@ class VOI(object):
             z=float(self.header['z_pixdim']),
         )
 
-    def read_data(self, io):
+    @property
+    def name(self):
+        return self.header['VOI name']
+
+    def _read_data(self, io):
         self.__read_data_fx(io)
 
     @property
     def __read_data_fx(self):
+        """
+        The "Start voxel data" header tells us what format the voxels are
+        going to be in; find the corresponding function and call it.
+        """
         return {
             "Text coordinate triple": self.__read_data_text_triples,
             "Text coordinate index": self.__read_data_text_indexes,
@@ -145,17 +175,63 @@ class VOI(object):
         }[self.header["Start voxel data"]]
 
     def __read_data_long_indexes(self, io):
-        logger.debug("Reading LONG data!")
+        """
+        This data is a bunch of 32-bit ints strung together.
+        """
+        logger.debug("Reading long index data")
         self.voxel_indexes = np.fromfile(
             io,
             self.voigroup.data_type_string,
             self.voxel_count)
 
     def __read_data_text_indexes(self, io):
-        pass
+        """
+        This is a set of text indexes, one per line
+        """
+        logger.debug("Reading text index data")
+        self.voxel_indexes = np.zeros(self.voxel_count, dtype=np.int32)
+        for i in range(self.voxel_count):
+            idx = int(io.readline.strip())
+            self.voxel_indexes[i] = idx
 
     def __read_data_text_triples(self, io):
-        pass
+        """
+        This is a set of integer triples in the format
+        x, y, z
+        We'll convert these to voxel indexes and return a numpy array of
+        those.
+        """
+        logger.debug("Reading text triple data")
+        sh = self.shape
+
+        def triple_to_index(x, y, z):
+            return ((z * sh.x * sh.y) + (y * sh.x) + x)
+
+        def triple_line_to_index(line):
+            x, y, z = [int(num) for num in line.split(",")]
+            return triple_to_index(x, y, z)
+
+        self.voxel_indexes = np.zeros(self.voxel_count, dtype=np.int32)
+        for i in range(self.voxel_count):
+            triple_text = io.readline().strip()
+            idx = triple_line_to_index(triple_text)
+            logger.debug("Triple {0} -> {1}".format(triple_text, idx))
+            self.voxel_indexes[i] = idx
+
+    def _seek_to_next_voi(self, io):
+        """
+        Assumes we're at the end of our voxel data, we'll read lines until we
+        get to END_VOI, and then another couple to leave us at the start of
+        the next VOI header.
+        """
+        while True:
+            line = io.readline()
+            parts = [p.strip() for p in line.split("=")]
+            if len(parts) == 2 and parts[0] == self.END_VOI:
+                break
+        # There are two lines we can ignore here...
+        io.readline()
+        io.readline()
 
 
 class VOIFileError(ValueError):
