@@ -194,6 +194,9 @@ class VOI(object):
             idx = int(io.readline.strip())
             self.voxel_indexes[i] = idx
 
+    def __triple_to_index(self, x, y, z):
+        return ((z * self.shape.x * self.shape.y) + (y * self.shape.x) + x)
+
     def __read_data_text_triples(self, io):
         """
         This is a set of integer triples in the format
@@ -202,14 +205,10 @@ class VOI(object):
         those.
         """
         logger.debug("Reading text triple data")
-        sh = self.shape
-
-        def triple_to_index(x, y, z):
-            return ((z * sh.x * sh.y) + (y * sh.x) + x)
 
         def triple_line_to_index(line):
             x, y, z = [int(num) for num in line.split(",")]
-            return triple_to_index(x, y, z)
+            return self.__triple_to_index(x, y, z)
 
         self.voxel_indexes = np.zeros(self.voxel_count, dtype=np.int32)
         for i in range(self.voxel_count):
