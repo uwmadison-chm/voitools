@@ -1,26 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from setuptools import setup, find_packages, Command
+from setuptools import setup, find_packages
 import os
 
 packages = find_packages()
-
-
-# class PyTest(Command):
-#     user_options = []
-
-#     def initialize_options(self):
-#         pass
-
-#     def finalize_options(self):
-#         pass
-
-#     def run(self):
-#         import sys
-#         import subprocess
-#         errno = subprocess.call([sys.executable, 'runtests.py'])
-#         raise SystemExit(errno)
 
 
 def get_locals(filename):
@@ -38,10 +22,9 @@ setup(
     license=metadata['license'],
     url=metadata['url'],
     packages=find_packages(),
-    cmdclass={'test': PyTest},
     entry_points={
         # 'console_scripts': [
         #     'voi_info = voitools.scripts.voi_info:main'
         # ]
     }
-    )
+)
