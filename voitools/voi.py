@@ -91,18 +91,19 @@ class VOIGroup(object):
 
 
 class VOI(object):
-    def __init__(self, voigroup, header, voxel_indexes):
+    def __init__(self, voi_group, header, voxel_indexes):
         super(VOI, self).__init__()
-        self.voigroup = voigroup
+        self.voi_group = voi_group
         self.header = header
         self.voxel_indexes = voxel_indexes
+        self.voi_group.vois.append(self)
 
     BEGIN_HEADER = "VOI"
     BEGIN_DATA = "Start voxel data"
     END_VOI = "End of VOI"
 
     @classmethod
-    def from_io(kls, voigroup, io):
+    def from_io(kls, voi_group, io):
         """
         Read the header and voxel indexes. Assumes io is seek()ed to the start
         of the VOI header (eg, the next bytes we read should be "VOI").
@@ -110,7 +111,7 @@ class VOI(object):
         When done, we will be seek()ed to the start of the next VOI, or eof.
         """
         header = kls._read_header(io)
-        voi = kls(voigroup, header, None)
+        voi = kls(voi_group, header, None)
         voi._read_data(io)
         voi._seek_to_next_voi(io)
         return voi
@@ -180,7 +181,7 @@ class VOI(object):
         logger.debug("Reading long index data")
         self.voxel_indexes = np.fromfile(
             io,
-            self.voigroup.data_type_string,
+            self.voi_group.data_type_string,
             self.voxel_count)
 
     def __read_data_text_indexes(self, io):
