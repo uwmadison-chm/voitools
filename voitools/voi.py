@@ -19,8 +19,7 @@ import numpy as np
 
 import logging
 logger = logging.getLogger("voi")
-# Leave it on DEBUG while we're developing
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.ERROR)
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
 ch.setFormatter(logging.Formatter("%(message)s"))
