@@ -232,6 +232,12 @@ class VOI(object):
         io.readline()
         io.readline()
 
+    def __repr__(self):
+        return "VOI #{0}: {1}, {2} voxels".format(
+            self.header["VOI number"],
+            self.name,
+            self.voxel_count)
+
 
 class VOIFileError(ValueError):
     pass
