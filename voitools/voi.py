@@ -15,6 +15,7 @@ from __future__ import (
     absolute_import)
 
 from collections import namedtuple
+from voitools.vendor.ordereddict import OrderedDict
 import numpy as np
 
 import logging
@@ -62,7 +63,7 @@ class VOIGroup(object):
         readable is assumed to be seek()ed to the start of the data -- in this
         case, that will generally be the start of the file.
         """
-        header = {}
+        header = OrderedDict()
         header_start_line = io.readline().strip()
         if not header_start_line == kls.BEGIN_HEADER:
             raise VOIFileError(
@@ -119,7 +120,7 @@ class VOI(object):
 
     @classmethod
     def _read_header(kls, io):
-        header = {}
+        header = OrderedDict()
         header_start_line = io.readline().strip()
         if not header_start_line == kls.BEGIN_HEADER:
             raise VOIFileError(
