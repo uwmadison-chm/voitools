@@ -84,6 +84,6 @@ def test_read_file_filename(long_data_filename):
     assert voi_group.voi_count == len(voi_group.vois)
 
 
-#def test_read_file_io(long_data_file):
-#    voi_group = voi.read_file(long_data_file)
-#    assert voi_group.voi_count == len(voi_group.vois)
+def test_read_file_io(long_data_file):
+    vg = voi.read_file(long_data_file)
+    assert vg.voi_count == len(vg.vois)

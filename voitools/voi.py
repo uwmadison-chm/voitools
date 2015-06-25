@@ -39,9 +39,11 @@ def read_file(filename_or_io):
 
 def _read_io(io):
     voi_group = VOIGroup.from_io(io)
+    vois = []
     for i in range(voi_group.voi_count):
         voi = VOI.from_io(voi_group, io)
-        voi_group.vois.append(voi)
+        vois.append(voi)
+    voi_group.vois = vois
     return voi_group
 
 
