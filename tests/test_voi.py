@@ -17,31 +17,9 @@ from __future__ import (
     absolute_import)
 
 from voitools import voi
-import os
 import logging
 
-import pytest
-
-DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
-
 voi.logger.setLevel(logging.DEBUG)
-
-
-@pytest.fixture
-def long_data_filename():
-    return os.path.join(DATA_DIR, "long.voi")
-
-
-@pytest.yield_fixture
-def long_data_file(long_data_filename):
-    with open(long_data_filename, "r") as f:
-        yield f
-
-
-@pytest.yield_fixture
-def triple_data_file():
-    with open(os.path.join(DATA_DIR, "triples.voi"), "r") as f:
-        yield f
 
 
 def test_read_group_header(long_data_file):
