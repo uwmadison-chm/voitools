@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # Part of the voitools package
 # Copyright 2015 Board of Regents of the University of Wisconsin System
@@ -18,21 +19,35 @@ Options:
   -v --verbose              Display debugging information
 """
 
+import sys
 import voitools
+from voitools import voi
+import logging
 from voitools.vendor import docopt
 
 
-def main():
+def main(argv):
     arguments = docopt.docopt(
         __doc__,
+        argv,
         version="voitools {0}".format(voitools.__version__)
     )
+    if arguments["--verbose"]:
+        voi.logger.setLevel(logging.DEBUG)
     print_voi_info(arguments)
 
 
 def print_voi_info(arguments):
-    pass
+    voi_data = voi.read_file(arguments['<datafile>'])
+    print("VOI Group Header")
+    for k, v in voi_data.header.iteritems():
+        print("{0}: {1}".format(k, v))
+    for i, cur_voi in enumerate(voi_data.vois):
+        print("VOI {0} Header".format(i + 1))
+        for k, v in cur_voi.header.iteritems():
+            print("  {0}: {1}".format(k, v))
+
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])
