@@ -40,19 +40,16 @@ def read_file(filename_or_io):
 
 def _read_io(io):
     voi_group = VOIGroup.from_io(io)
-    vois = []
     for i in range(voi_group.voi_count):
-        voi = VOI.from_io(voi_group, io)
-        vois.append(voi)
-    voi_group.vois = vois
+        VOI.from_io(voi_group, io)
     return voi_group
 
 
 class VOIGroup(object):
-    def __init__(self, header, vois=[]):
+    def __init__(self, header, vois=None):
         super(VOIGroup, self).__init__()
         self.header = header
-        self.vois = vois
+        self.vois = vois or []
 
     BEGIN_HEADER = "******** VOIGroup File *********"
     END_HEADER = "-----------------------------------"
@@ -99,6 +96,7 @@ class VOI(object):
         self.voi_group = voi_group
         self.header = header
         self.voxel_indexes = voxel_indexes
+        self.voi_group.vois.append(self)
 
     BEGIN_HEADER = "VOI"
     BEGIN_DATA = "Start voxel data"
