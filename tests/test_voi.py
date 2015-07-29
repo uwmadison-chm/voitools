@@ -65,3 +65,12 @@ def test_read_file_filename(long_data_filename):
 def test_read_file_io(long_data_file):
     vg = voi.read_file(long_data_file)
     assert vg.voi_count == len(vg.vois)
+
+
+def test_to_volume(long_data_file):
+    import numpy as np
+    vg = voi.read_file(long_data_file)
+    voi1 = vg.vois[0]
+    vol = voi1.to_volume()
+    assert vol.shape == voi1.shape
+    assert np.sum(vol) == voi1.voxel_count

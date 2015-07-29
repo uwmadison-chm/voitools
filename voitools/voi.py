@@ -159,6 +159,12 @@ class VOI(object):
     def name(self):
         return self.header['VOI name']
 
+    def to_volume(self, dtype=np.int16):
+        vol = np.zeros(self.shape, dtype=dtype, order='F')
+        raveled = vol.ravel(order='A')
+        raveled[self.voxel_indexes] = 1
+        return vol
+
     def _read_data(self, io):
         self.__read_data_fx(io)
 
