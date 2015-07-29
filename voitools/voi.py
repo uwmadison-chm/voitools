@@ -17,6 +17,7 @@ from __future__ import (
 from collections import namedtuple
 from voitools.vendor.ordereddict import OrderedDict
 import numpy as np
+import os
 
 import logging
 logger = logging.getLogger("voi")
@@ -89,6 +90,38 @@ class VOIGroup(object):
     def voi_count(self):
         return int(self.header['Number of VOIs'])
 
+    @property
+    def voxel_dimensions(self):
+        return Triple(
+            float(self.header['X pixdim']),
+            float(self.header['Y pixdim']),
+            float(self.header['Z pixdim']),
+        )
+
+    @property
+    def shape(self):
+        return Triple(
+            x=int(self.header['X dim']),
+            y=int(self.header['Y dim']),
+            z=int(self.header['Z dim']),
+        )
+
+    @property
+    def center_coords(self):
+        shape = np.array(self.shape)
+        voxdims = np.array(self.voxel_dimensions)
+        center = (-0.5 * shape * voxdims) + (0.5 * voxdims)
+        return center
+
+    @property
+    def affine(self):
+        # Our -1, -1, 1 contortions bring us into RAI coordinates.
+        # I don't know if this is always needed
+        voxel_dims = np.array(list(self.voxel_dimensions) + [1.0])
+        affine = np.diag(voxel_dims * np.array([-1, -1, 1, 1]))
+        affine[:, 3][0:3] = self.center_coords * np.array([-1, -1, 1])
+        return affine
+
 
 class VOI(object):
     def __init__(self, voi_group, header, voxel_indexes):
@@ -158,6 +191,26 @@ class VOI(object):
     @property
     def name(self):
         return self.header['VOI name']
+
+    @property
+    def voi_name(self):
+        return self.name
+
+    @property
+    def base_name(self):
+        f = os.path.basename(self.voi_group.header['Image-base file name'])
+        noext = os.path.splitext(f)[0]
+        return noext
+
+    @property
+    def cur_name(self):
+        f = os.path.basename(self.voi_group.header['Current file name'])
+        noext = os.path.splitext(f)[0]
+        return noext
+
+    @property
+    def voi_number(self):
+        return self.header['VOI number']
 
     def to_volume(self, dtype=np.int16):
         vol = np.zeros(self.shape, dtype=dtype, order='F')
