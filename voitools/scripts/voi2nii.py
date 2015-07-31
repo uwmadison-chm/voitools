@@ -25,7 +25,7 @@ Options:
                         voi_number  The index of this VOI
                         voxel_count The number of voxels in the VOI
                         voi_name    The name of this VOI
-                        [default: {base_name}-{voi_number}.nii]
+                        [default: {cur_name}-{voi_name}-{voi_number}.nii]
   --voi-numbers=<nums>  The indexes (starting from 1) of the VOIs to convert.
                         Separate with commas. If not specified, converts all
                         VOIs.
