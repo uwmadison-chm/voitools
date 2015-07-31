@@ -93,8 +93,9 @@ def process_vois(voi_group, name_pattern, voi_numbers, out_dir):
         out_filename = os.path.join(out_dir, make_filename(name_pattern, voi))
         logger.info("Writing to {0}".format(out_filename))
         img = nib.Nifti1Image(voi.to_volume(), voi_group.affine)
-        img.header['qform_code'] = 1
-        img.header['sform_code'] = 1
+        header = img.get_header()
+        header['qform_code'] = 1
+        header['sform_code'] = 1
         img.update_header()
         img.to_filename(out_filename)
 
