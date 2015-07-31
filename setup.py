@@ -23,8 +23,9 @@ setup(
     url=metadata['url'],
     packages=find_packages(),
     entry_points={
-        # 'console_scripts': [
-        #     'voi_info = voitools.scripts.voi_info:main'
-        # ]
+        'console_scripts': [
+            'voi_info = voitools.scripts.voi_info:console',
+            'voi2nii = voitools.scripts.voi2nii:console'
+        ]
     }
 )

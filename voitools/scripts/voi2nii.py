@@ -100,5 +100,9 @@ def process_vois(voi_group, name_pattern, voi_numbers, out_dir):
         img.to_filename(out_filename)
 
 
-if __name__ == "__main__":
+def console():
     main(sys.argv[1:])
+
+
+if __name__ == "__main__":
+    console()

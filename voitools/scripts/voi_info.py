@@ -48,5 +48,9 @@ def print_voi_info(arguments):
             print("  {0}: {1}".format(k, v))
 
 
-if __name__ == "__main__":
+def console():
     main(sys.argv[1:])
+
+
+if __name__ == "__main__":
+    console()
