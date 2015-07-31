@@ -214,7 +214,7 @@ class VOI(object):
 
     def to_volume(self, dtype=np.int16):
         vol = np.zeros(self.shape, dtype=dtype, order='F')
-        raveled = vol.ravel(order='A')
+        raveled = vol.ravel('A')
         raveled[self.voxel_indexes] = 1
         return vol
 
