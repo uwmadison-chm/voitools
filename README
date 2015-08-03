@@ -14,7 +14,8 @@ After some testing, I'll put this up on pypi.
 
 ### voi2nii
 
-```voi2nii [options] <datafile>
+```
+voi2nii [options] <datafile>
 
 Convert a spamalize .voi file into a set of nifti files.
 
@@ -46,7 +47,8 @@ Options:
 
 ### voi_info
 
-```voi_info [options] <datafile>
+```
+voi_info [options] <datafile>
 
 Print information about a spamalize .voi file.
 
