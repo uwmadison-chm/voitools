@@ -1,6 +1,6 @@
-# spamalize-to-nifti
+# voitools
 
-A little program to convert .VOI volume-of-interest files created by [spamalize](http://brainimaging.waisman.wisc.edu/~oakes/spam/spam_frames.htm) into NIFTI images.
+Scripts of inspect volume-of-interest files created by [spamalize](http://brainimaging.waisman.wisc.edu/~oakes/spam/spam_frames.htm), and convert them into NIFTI images.
 
 Requires [nibabel](http://nipy.sourceforge.net/nibabel/) and, hence, numpy. Should work with python 2.6 and 2.7; 3.0 is not tested yet.
 
