@@ -2,29 +2,76 @@
 
 A little program to convert .VOI volume-of-interest files created by [spamalize](http://brainimaging.waisman.wisc.edu/~oakes/spam/spam_frames.htm) into NIFTI images.
 
-Images will have an identity affine.
-
-Requires [nibabel](http://nipy.sourceforge.net/nibabel/).
+Requires [nibabel](http://nipy.sourceforge.net/nibabel/) and, hence, numpy. Should work with python 2.6 and 2.7; 3.0 is not tested yet.
 
 ## Installation
 
-```pip install spamalize_to_nifti```
+```python setup.py install```
+
+After some testing, I'll put this up on pypi.
 
 ## Usage
 
-```voi2nii VOI_FILE NIFTI_FILE```
+### voi2nii
 
-Note: We'll need to handle multiple VOIs per file somehow. We could:
+```voi2nii [options] <datafile>
 
-* Sequentially number multiple VOIs (problem for overlaps!)
-* Bitmask multiple VOIs (so VOIs would be numbererd 1,2,4,8,16...) (problem if more than 16 VOIs, we're limited to 16-bit images)
-* Make multiple output files
+Convert a spamalize .voi file into a set of nifti files.
 
-Multiple output files seems like the sanest thing, because how else will you know what's in the file? (I guess maybe something that would look at the .voi and tell you?)
+This program will produce one .nii file per VOI in a VOI group (.voi) file;
+the name will be determined by the --pattern parameter.
 
-The challenge there is that instead of a `NIFTI_FILE` we just get a prefix but maybe that isn't so bad. Could use `SPAM_FILE` for a prefix if no prefix is specified.
+Usage:
+  voi2nii [options] <datafile>
+  voi2nii -h | --help
 
-```voi_info VOI_FILE```
+Options:
+  --pattern=<pat>       How to name the output. Surround fields in {}.
+                        Available fields:
+                        base_name   The name of the file the VOI group is
+                                    based on
+                        cur_name    The current name of the VOI group file
+                        voi_number  The index of this VOI
+                        voxel_count The number of voxels in the VOI
+                        voi_name    The name of this VOI
+                        [default: {cur_name}-{voi_name}-{voi_number}.nii]
+  --voi-numbers=<nums>  The indexes (starting from 1) of the VOIs to convert.
+                        Separate with commas. If not specified, converts all
+                        VOIs.
+  --out-dir=<dir>       Directory to write the output files [default: .]
+  -h --help             Show this screen
+  --version             Show version
+  -v --verbose          Display debugging information
+```
 
-Prints the header information from a VOI file. Maybe in a machine-readable format?
+### voi_info
+
+```voi_info [options] <datafile>
+
+Print information about a spamalize .voi file.
+
+Usage:
+  voi_info [options] <datafile>
+  voi_info -h | --help
+
+Options:
+  -h --help                 Show this screen
+  --version                 Show version
+  -v --verbose              Display debugging information
+```
+
+## Notes
+
+Spamalize is written in IDL; its arrays are in fortran data order. Orientation and origin information are not included in .voi files; voi2nii writes in RAI orientation with the origin at the center of the volume.
+
+## Credits
+
+[Spamalize](http://brainimaging.waisman.wisc.edu/~oakes/spam/spam_frames.htm) was developed by the most skilled and fantastic Terry Oakes.
+
+voi_tools ships with the excellent [docopt](http://docopt.org/) and ordereddict libraries.
+
+docopt is copyright © 2013 Vladimir Keleshev, vladimir@keleshev.com
+
+ordereddict is copyright © 2009 Raymond Hettinger
+
 
