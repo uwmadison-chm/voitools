@@ -35,3 +35,7 @@ def triple_data_filename():
 def triple_data_file(triple_data_filename):
     with open(triple_data_filename, "r") as f:
         yield f
+
+@pytest.fixture
+def sample_nii():
+    return os.path.join(DATA_DIR, "sample.nii.gz")

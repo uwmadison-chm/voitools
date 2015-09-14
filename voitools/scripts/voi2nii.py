@@ -29,6 +29,11 @@ Options:
   --voi-numbers=<nums>  The indexes (starting from 1) of the VOIs to convert.
                         Separate with commas. If not specified, converts all
                         VOIs.
+  --affine-parent=<parent_file>
+                        Read orientation, origin, and voxel size from this
+                        file.
+                        If not specified, reads voxel size from the .voi file
+                        and assumes a centered origin in RPI orientation.
   --out-dir=<dir>       Directory to write the output files [default: .]
   -h --help             Show this screen
   --version             Show version
@@ -40,7 +45,6 @@ import logging
 import re
 import os
 
-import numpy as np
 import nibabel as nib
 
 import voitools
@@ -63,16 +67,26 @@ def main(argv):
     if arguments['--verbose']:
         logger.setLevel(logging.DEBUG)
     logger.debug(arguments)
-    voi_numbers = None
-    if arguments['--voi-numbers']:
-        parts = arguments['--voi-numbers'].split(",")
-        voi_numbers = [int(num) - 1 for num in parts]
     voi_group = voitools.voi.read_file(arguments['<datafile>'])
+    voi_indexes = make_voi_numbers(voi_group, arguments['--voi-numbers'])
+    voi_group.set_affine(make_affine(arguments['--affine-parent']))
     process_vois(
         voi_group,
         arguments['--pattern'],
-        voi_numbers,
+        voi_indexes,
         arguments['--out-dir'])
+
+
+def make_voi_numbers(voi_group, voi_numbers_string):
+    if voi_numbers_string is None:
+        return range(voi_group.voi_count)
+    return [int(num) - 1 for num in voi_numbers_string.split(",")]
+
+
+def make_affine(affine_parent_name):
+    if affine_parent_name is None:
+        return None
+    return nib.load(affine_parent_name).get_affine()
 
 
 def make_filename(pattern, voi):
@@ -85,19 +99,25 @@ def make_filename(pattern, voi):
     return out_name
 
 
-def process_vois(voi_group, name_pattern, voi_numbers, out_dir):
-    voi_numbers = voi_numbers or range(voi_group.voi_count)
-    for num in voi_numbers:
-        logger.debug("Converting VOI {0}".format(num + 1))
-        voi = voi_group.vois[num]
-        out_filename = os.path.join(out_dir, make_filename(name_pattern, voi))
-        logger.info("Writing to {0}".format(out_filename))
-        img = nib.Nifti1Image(voi.to_volume(), voi_group.affine)
-        header = img.get_header()
-        header['qform_code'] = 1
-        header['sform_code'] = 1
-        img.update_header()
-        img.to_filename(out_filename)
+def process_vois(voi_group, name_pattern, voi_indexes, out_dir):
+    vois = [voi_group.vois[i] for i in voi_indexes]
+    for cur_voi in vois:
+        logger.debug("Converting VOI {0}".format(cur_voi.voi_number))
+        nii = make_nifti(cur_voi)
+        out_filename = os.path.join(
+            out_dir, make_filename(name_pattern, cur_voi))
+        nii.to_filename(out_filename)
+
+
+def make_nifti(cur_voi):
+    # It's OK if this is None, we'll just choose a centered affine.
+    logger.debug("Making nifti for {0}".format(cur_voi.voi_number))
+    img = nib.Nifti1Image(cur_voi.to_volume(), cur_voi.affine)
+    header = img.get_header()
+    header['qform_code'] = 1
+    header['sform_code'] = 1
+    img.update_header()
+    return img
 
 
 def console():

@@ -47,10 +47,11 @@ def _read_io(io):
 
 
 class VOIGroup(object):
-    def __init__(self, header, vois=None):
+    def __init__(self, header, vois=None, affine=None):
         super(VOIGroup, self).__init__()
         self.header = header
         self.vois = vois or []
+        self.__affine = affine
 
     BEGIN_HEADER = "******** VOIGroup File *********"
     END_HEADER = "-----------------------------------"
@@ -107,19 +108,32 @@ class VOIGroup(object):
         )
 
     @property
-    def center_coords(self):
+    def affine(self):
+        if self.__affine is not None:
+            return self.__affine
+        return self.__centered_affine
+
+    def set_affine(self, aff):
+        self.__affine = aff
+
+    @property
+    def using_default_affine(self):
+        return self.__affine is None
+
+    @property
+    def __center_coords(self):
         shape = np.array(self.shape)
         voxdims = np.array(self.voxel_dimensions)
         center = (-0.5 * shape * voxdims) + (0.5 * voxdims)
         return center
 
     @property
-    def affine(self):
+    def __centered_affine(self):
         # Our -1, -1, 1 contortions bring us into RAI coordinates.
         # I don't know if this is always needed
         voxel_dims = np.array(list(self.voxel_dimensions) + [1.0])
         affine = np.diag(voxel_dims * np.array([-1, -1, 1, 1]))
-        affine[:, 3][0:3] = self.center_coords * np.array([-1, -1, 1])
+        affine[:, 3][0:3] = self.__center_coords * np.array([-1, -1, 1])
         return affine
 
 
@@ -211,6 +225,10 @@ class VOI(object):
     @property
     def voi_number(self):
         return self.header['VOI number']
+
+    @property
+    def affine(self):
+        return self.voi_group.affine
 
     def to_volume(self, dtype=np.int16):
         vol = np.zeros(self.shape, dtype=dtype, order='F')

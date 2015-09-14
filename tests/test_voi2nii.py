@@ -19,6 +19,10 @@ from __future__ import (
 
 import voitools
 from voitools.scripts import voi2nii
+
+import nibabel as nib
+import numpy as np
+
 import tempfile
 import shutil
 import glob
@@ -52,10 +56,26 @@ def test_creates_files(long_data_file):
         voi2nii.process_vois(
             voi_group,
             "{voi_number}.nii",
-            None,
-            out_dir
-        )
+            range(voi_group.voi_count),
+            out_dir)
         files = glob.glob(os.path.join(out_dir, "*"))
         assert voi_group.voi_count == len(files)
+    finally:
+        shutil.rmtree(out_dir)
+
+
+def test_setting_affine(long_data_file, sample_nii):
+    voi_group = voitools.voi.read_file(long_data_file)
+    parent_nii = nib.load(sample_nii)
+    voi_group.set_affine(parent_nii.get_affine())
+    out_dir = tempfile.mkdtemp()
+    try:
+        voi2nii.process_vois(
+            voi_group,
+            "output.nii",
+            [0],
+            out_dir)
+        out_nii = nib.load(os.path.join(out_dir, "output.nii"))
+        assert np.array_equal(parent_nii.get_affine(), out_nii.get_affine())
     finally:
         shutil.rmtree(out_dir)
